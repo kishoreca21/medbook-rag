@@ -1,0 +1,85 @@
+name: Fix folder layout
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move nested repo folder to root, add hidden files, remove helper workflows
+        run: |
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [ ! -d "$REPO" ]; then echo "Nothing nested to fix"; exit 0; fi
+          mv "$REPO" "$RUNNER_TEMP/src"
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a "$RUNNER_TEMP/src/." .
+          if [ "$REPO" = "portfolio-ai" ]; then
+          cat > .gitignore <<'EOF1'
+          # Logs
+          logs
+          *.log
+          npm-debug.log*
+          yarn-debug.log*
+          yarn-error.log*
+          pnpm-debug.log*
+          lerna-debug.log*
+
+          node_modules
+          dist
+          dist-ssr
+          *.local
+
+          # Editor directories and files
+          .vscode/*
+          !.vscode/extensions.json
+          .idea
+          .DS_Store
+          *.suo
+          *.ntvs*
+          *.njsproj
+          *.sln
+          *.sw?
+
+          # Secrets
+          .env
+          .env.*
+          !.env.example
+          EOF1
+          cat > .env.example <<'EOF2'
+          GROQ_API_KEY=your_free_groq_key_here
+          EOF2
+          fi
+          if [ "$REPO" = "medbook-rag" ]; then
+          cat > .gitignore <<'EOF3'
+          # NEVER commit patient data or secrets
+          recordings/
+          transcripts/
+          prescriptions/
+          prescriptions_raw/
+          summaries/
+          unusedfiles/
+          vectordb/
+          books/
+          *.m4a
+          *.mp3
+          *.wav
+          *.jpeg
+          *.jpg
+          *.png
+          *.xlsx
+          apikey.txt
+          APIKEY.txt
+          *key*.txt
+          secret*
+          .env
+          __pycache__/
+          EOF3
+          fi
+          git config user.name "kishoreca21"
+          git config user.email "kishoreca21@users.noreply.github.com"
+          git add -A
+          git commit -m "Tidy folder layout"
+          git push
