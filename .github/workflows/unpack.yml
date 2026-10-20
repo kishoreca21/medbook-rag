@@ -1,0 +1,25 @@
+name: Unpack portfolio upload
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack zip(s) with folders intact, then remove this workflow
+        run: |
+          shopt -s nullglob
+          zips=(*.zip)
+          if [ ${#zips[@]} -eq 0 ]; then echo "No zip to unpack yet"; exit 0; fi
+          mkdir -p "$RUNNER_TEMP/unpack"
+          for z in "${zips[@]}"; do unzip -oq "$z" -d "$RUNNER_TEMP/unpack"; done
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a "$RUNNER_TEMP/unpack/." .
+          git config user.name "kishoreca21"
+          git config user.email "kishoreca21@users.noreply.github.com"
+          git add -A
+          git commit -m "Add portfolio files"
+          git push
