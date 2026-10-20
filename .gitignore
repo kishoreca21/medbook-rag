@@ -1,0 +1,22 @@
+# NEVER commit patient data or secrets
+recordings/
+transcripts/
+prescriptions/
+prescriptions_raw/
+summaries/
+unusedfiles/
+vectordb/
+books/
+*.m4a
+*.mp3
+*.wav
+*.jpeg
+*.jpg
+*.png
+*.xlsx
+apikey.txt
+APIKEY.txt
+*key*.txt
+secret*
+.env
+__pycache__/
